@@ -97,6 +97,19 @@ app.post('/api/tracking/start', async (req, res) => {
   }
 });
 
+// Stop current tracking for a user
+app.post('/api/tracking/stop', async (req, res) => {
+  const { user_id } = req.body;
+  if (!user_id) return res.status(400).json({ detail: 'User ID required' });
+  try {
+    await pool.query('UPDATE tracking SET active = FALSE, end_time = NOW() WHERE user_id = $1 AND active = TRUE', [user_id]);
+    io.emit('tracking_update');
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ detail: 'Server error' });
+  }
+});
+
 // Get live tracking data
 app.get('/api/tracking/live', async (req, res) => {
   try {
