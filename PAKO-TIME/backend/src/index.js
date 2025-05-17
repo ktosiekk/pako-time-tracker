@@ -72,7 +72,7 @@ app.get('/api/categories/:id/subcategories', async (req, res) => {
   }
 });
 
-// Start tracking (pause previous, start new)
+// Start tracking (pause previous, start new or resume paused)
 app.post('/api/tracking/start', async (req, res) => {
   const { user_id, category_id, subcategory_id } = req.body;
   if (!user_id || !category_id || !subcategory_id) return res.status(400).json({ detail: 'Missing fields' });
@@ -81,11 +81,24 @@ app.post('/api/tracking/start', async (req, res) => {
     await client.query('BEGIN');
     // Pause previous active
     await client.query('UPDATE tracking SET active = FALSE, end_time = NOW() WHERE user_id = $1 AND active = TRUE', [user_id]);
-    // Start new
-    await client.query(
-      'INSERT INTO tracking (user_id, category_id, subcategory_id, start_time, active) VALUES ($1, $2, $3, NOW(), TRUE)',
+    // Try to resume a paused session for this user/category/subcategory
+    const resumeResult = await client.query(
+      `SELECT id FROM tracking WHERE user_id = $1 AND category_id = $2 AND subcategory_id = $3 AND active = FALSE AND end_time IS NOT NULL ORDER BY end_time DESC LIMIT 1`,
       [user_id, category_id, subcategory_id]
     );
+    if (resumeResult.rows.length > 0) {
+      // Resume: set active=TRUE, end_time=NULL (do NOT update start_time)
+      await client.query(
+        'UPDATE tracking SET active = TRUE, end_time = NULL WHERE id = $1',
+        [resumeResult.rows[0].id]
+      );
+    } else {
+      // Start new
+      await client.query(
+        'INSERT INTO tracking (user_id, category_id, subcategory_id, start_time, active) VALUES ($1, $2, $3, NOW(), TRUE)',
+        [user_id, category_id, subcategory_id]
+      );
+    }
     await client.query('COMMIT');
     io.emit('tracking_update'); // Notify all clients
     res.json({ ok: true });

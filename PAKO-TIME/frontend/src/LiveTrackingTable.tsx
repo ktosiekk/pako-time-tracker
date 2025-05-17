@@ -46,34 +46,43 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
         placeholder="Filter..."
         value={filter}
         onChange={e => setFilter(e.target.value)}
-        style={{ marginBottom: 20, padding: 10, width: 240, borderRadius: 8, border: "1px solid #1976d2", fontSize: 16 }}
+        style={{ marginBottom: 20, padding: 10, width: 300, borderRadius: 8, border: "1px solid #1976d2", fontSize: 16, boxShadow: "0 1px 4px #1976d233" }}
       />
-      <div style={{ overflowX: "auto", background: "#fff", borderRadius: 12, boxShadow: "0 2px 16px #0001", padding: 24, minWidth: 700 }}>
-        <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: 17, textAlign: "center" }}>
+      <div style={{
+        overflowX: "auto",
+        background: "#fff",
+        borderRadius: 18,
+        boxShadow: "0 4px 24px #0002",
+        padding: 32,
+        minWidth: 900,
+        maxWidth: 1200,
+        border: "1px solid #e3e3e3"
+      }}>
+        <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: 18, textAlign: "center", letterSpacing: 0.2, color: "#222" }}>
           <thead>
-            <tr style={{ background: "#1976d2", color: "#fff" }}>
-              <th style={{ padding: "12px 16px", borderTopLeftRadius: 8 }}>User ID</th>
-              <th style={{ padding: "12px 16px" }}>Name</th>
-              <th style={{ padding: "12px 16px" }}>Surname</th>
-              <th style={{ padding: "12px 16px" }}>Category</th>
-              <th style={{ padding: "12px 16px" }}>Sub-Category</th>
-              <th style={{ padding: "12px 16px", borderTopRightRadius: 8 }}>Time Spent</th>
+            <tr style={{ background: "linear-gradient(90deg,#1976d2 60%,#2196f3 100%)", color: "#fff" }}>
+              <th style={{ padding: "14px 18px", borderTopLeftRadius: 10, fontWeight: 700, letterSpacing: 1 }}>User ID</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Name</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Surname</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Category</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Sub-Category</th>
+              <th style={{ padding: "14px 18px", borderTopRightRadius: 10, fontWeight: 700 }}>Time Spent</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: 32, color: "#888" }}>No records found.</td>
+                <td colSpan={6} style={{ padding: 40, color: "#888", fontSize: 18 }}>No records found.</td>
               </tr>
             ) : (
               filtered.map(row => (
-                <tr key={row.id} style={{ background: row.active ? "#e3f2fd" : "#f9f9f9" }}>
-                  <td style={{ padding: "10px 12px", fontWeight: 500 }}>{row.user_id}</td>
-                  <td style={{ padding: "10px 12px" }}>{row.name}</td>
-                  <td style={{ padding: "10px 12px" }}>{row.surname}</td>
-                  <td style={{ padding: "10px 12px" }}>{row.category}</td>
-                  <td style={{ padding: "10px 12px" }}>{row.subcategory}</td>
-                  <td style={{ padding: "10px 12px", color: row.active ? "#1976d2" : undefined, fontWeight: row.active ? 600 : undefined }}>{row.active ? <LiveCounter start={row.start_time} /> : <Duration start={row.start_time} end={row.end_time} />}</td>
+                <tr key={row.id} style={{ background: row.active ? "#e3f2fd" : "#f9f9f9", transition: "background 0.3s" }}>
+                  <td style={{ padding: "12px 14px", fontWeight: 600 }}>{row.user_id}</td>
+                  <td style={{ padding: "12px 14px" }}>{row.name}</td>
+                  <td style={{ padding: "12px 14px" }}>{row.surname}</td>
+                  <td style={{ padding: "12px 14px" }}>{row.category}</td>
+                  <td style={{ padding: "12px 14px" }}>{row.subcategory}</td>
+                  <td style={{ padding: "12px 14px", color: row.active ? "#1976d2" : undefined, fontWeight: row.active ? 700 : 500, fontSize: 17 }}>{row.active ? <LiveCounter start={row.start_time} /> : <Duration start={row.start_time} end={row.end_time} />}</td>
                 </tr>
               ))
             )}
