@@ -125,10 +125,10 @@ app.post('/api/tracking/start', async (req, res) => {
       [user_id, category_id, subcategory_id]
     );
     if (resumeResult.rows.length > 0) {
-      // Resume: set active=TRUE, end_time=NULL (do NOT update start_time)
+      // Instead of resuming, start a new row for this period
       await client.query(
-        'UPDATE tracking SET active = TRUE, end_time = NULL WHERE id = $1',
-        [resumeResult.rows[0].id]
+        'INSERT INTO tracking (user_id, category_id, subcategory_id, start_time, active) VALUES ($1, $2, $3, NOW(), TRUE)',
+        [user_id, category_id, subcategory_id]
       );
     } else {
       // Start new

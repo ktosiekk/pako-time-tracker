@@ -39,6 +39,31 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
     )
   );
 
+  // Group rows by user_id, category, subcategory
+  type GroupedRow = TrackingRow & { totalSeconds: number, active: boolean, activeStart: string | null };
+  const groupedObj: { [key: string]: GroupedRow } = {};
+  for (const row of filtered) {
+    const key = `${row.user_id}|${row.category}|${row.subcategory}`;
+    if (!groupedObj[key]) {
+      groupedObj[key] = {
+        ...row,
+        totalSeconds: 0,
+        active: false,
+        activeStart: null,
+      };
+    }
+    // Add duration for this row
+    if (row.active) {
+      groupedObj[key].active = true;
+      groupedObj[key].activeStart = row.start_time;
+      groupedObj[key].id = row.id; // Use latest id for key
+    }
+    const start = new Date(row.start_time).getTime();
+    const end = row.end_time ? new Date(row.end_time).getTime() : (row.active ? Date.now() : start);
+    groupedObj[key].totalSeconds += Math.max(0, Math.floor((end - start) / 1000));
+  }
+  const grouped = Object.values(groupedObj);
+
   return (
     <div style={{ marginTop: 32, display: "flex", flexDirection: "column", alignItems: "center" }}>
       <input
@@ -70,19 +95,19 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {grouped.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ padding: 40, color: "#888", fontSize: 18 }}>No records found.</td>
               </tr>
             ) : (
-              filtered.map(row => (
-                <tr key={row.id} style={{ background: row.active ? "#e3f2fd" : "#f9f9f9", transition: "background 0.3s" }}>
+              grouped.map((row: any) => (
+                <tr key={row.user_id + row.category + row.subcategory} style={{ background: row.active ? "#e3f2fd" : "#f9f9f9", transition: "background 0.3s" }}>
                   <td style={{ padding: "12px 14px", fontWeight: 600 }}>{row.user_id}</td>
                   <td style={{ padding: "12px 14px" }}>{row.name}</td>
                   <td style={{ padding: "12px 14px" }}>{row.surname}</td>
                   <td style={{ padding: "12px 14px" }}>{row.category}</td>
                   <td style={{ padding: "12px 14px" }}>{row.subcategory}</td>
-                  <td style={{ padding: "12px 14px", color: row.active ? "#1976d2" : undefined, fontWeight: row.active ? 700 : 500, fontSize: 17 }}>{row.active ? <LiveCounter start={row.start_time} /> : <Duration start={row.start_time} end={row.end_time} />}</td>
+                  <td style={{ padding: "12px 14px", color: row.active ? "#1976d2" : undefined, fontWeight: row.active ? 700 : 500, fontSize: 17 }}>{row.active ? <LiveCounterAccum start={row.activeStart} baseSeconds={row.totalSeconds - Math.floor((Date.now() - new Date(row.activeStart).getTime()) / 1000)} /> : formatDuration(row.totalSeconds)}</td>
                 </tr>
               ))
             )}
@@ -102,6 +127,16 @@ function LiveCounter({ start }: { start: string }) {
     return () => clearInterval(interval);
   }, []);
   const seconds = Math.floor((now - new Date(start).getTime()) / 1000);
+  return <span>{formatDuration(seconds)}</span>;
+}
+
+function LiveCounterAccum({ start, baseSeconds }: { start: string, baseSeconds: number }) {
+  const [now, setNow] = React.useState(Date.now());
+  React.useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+  const seconds = baseSeconds + Math.floor((now - new Date(start).getTime()) / 1000);
   return <span>{formatDuration(seconds)}</span>;
 }
 
