@@ -62,11 +62,11 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
           <thead>
             <tr style={{ background: "linear-gradient(90deg,#1976d2 60%,#2196f3 100%)", color: "#fff" }}>
               <th style={{ padding: "14px 18px", borderTopLeftRadius: 10, fontWeight: 700, letterSpacing: 1 }}>User ID</th>
-              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Name</th>
-              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Surname</th>
-              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Category</th>
-              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Sub-Category</th>
-              <th style={{ padding: "14px 18px", borderTopRightRadius: 10, fontWeight: 700 }}>Time Spent</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Imię</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Nazwisko</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Kategoria</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Pod-Kategoria</th>
+              <th style={{ padding: "14px 18px", borderTopRightRadius: 10, fontWeight: 700 }}>Czas</th>
             </tr>
           </thead>
           <tbody>

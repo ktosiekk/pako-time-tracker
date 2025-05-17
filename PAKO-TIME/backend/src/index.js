@@ -39,6 +39,44 @@ function schedulePurgeOldTracking() {
 }
 schedulePurgeOldTracking();
 
+// Clear tracking table every day at 02:00 am, but archive to tracking_archive first
+const scheduleClearTrackingTable = () => {
+  const now = new Date();
+  const next2am = new Date(now);
+  next2am.setHours(2, 0, 0, 0);
+  if (next2am < now) next2am.setDate(next2am.getDate() + 1);
+  const msUntil2am = next2am - now;
+  setTimeout(() => {
+    setInterval(async () => {
+      try {
+        // Create archive table if not exists
+        await pool.query(`CREATE TABLE IF NOT EXISTS tracking_archive AS TABLE tracking WITH NO DATA`);
+        // Copy all tracking rows to archive
+        await pool.query(`INSERT INTO tracking_archive SELECT * FROM tracking`);
+        // Delete all from tracking
+        await pool.query(`DELETE FROM tracking`);
+        console.log('Tracking table cleared and archived at 02:00');
+        io.emit('tracking_update');
+      } catch (err) {
+        console.error('Error archiving/clearing tracking table:', err);
+      }
+    }, 24 * 60 * 60 * 1000);
+    // Run once at first 2am
+    (async () => {
+      try {
+        await pool.query(`CREATE TABLE IF NOT EXISTS tracking_archive AS TABLE tracking WITH NO DATA`);
+        await pool.query(`INSERT INTO tracking_archive SELECT * FROM tracking`);
+        await pool.query(`DELETE FROM tracking`);
+        console.log('Tracking table cleared and archived at 02:00');
+        io.emit('tracking_update');
+      } catch (err) {
+        console.error('Error archiving/clearing tracking table:', err);
+      }
+    })();
+  }, msUntil2am);
+};
+scheduleClearTrackingTable();
+
 // --- Authentication endpoint ---
 app.post('/api/auth/login', async (req, res) => {
   const { user_id } = req.body;

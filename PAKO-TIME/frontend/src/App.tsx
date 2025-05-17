@@ -47,18 +47,18 @@ function App() {
   return (
     <div style={{ padding: 32 }}>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-        <form onSubmit={handleLogin} style={{ background: "#fff", padding: 16, borderRadius: 8, boxShadow: "0 2px 8px #0001", minWidth: 320, display: "flex", alignItems: "center", gap: 8 }}>
+        <form onSubmit={handleLogin} style={{ background: "#fff", padding: 16, borderRadius: 8, boxShadow: "0 2px 8px #0001", minWidth: 320, display: "flex", alignItems: "center", gap: 8, justifyContent: "center", width: 340 }}>
           <input
             ref={inputRef}
             type="text"
-            placeholder="Enter User ID (e.g. PAK001)"
+            placeholder="Zaloguj się"
             value={userId}
             onChange={e => setUserId(e.target.value)}
-            style={{ padding: 8, fontSize: 16, borderRadius: 6, border: "1px solid #ccc", width: 160 }}
+            style={{ padding: 10, fontSize: 17, borderRadius: 8, border: "1px solid #ccc", width: 240, textAlign: "center" }}
             autoFocus
             disabled={loading}
           />
-          <button type="submit" style={{ padding: 8, fontSize: 16, borderRadius: 6, background: "#1976d2", color: "#fff", border: 0 }} disabled={loading}>
+          <button type="submit" style={{ padding: 10, fontSize: 17, borderRadius: 8, background: "#1976d2", color: "#fff", border: 0, minWidth: 90 }} disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
