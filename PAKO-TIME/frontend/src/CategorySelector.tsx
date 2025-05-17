@@ -54,7 +54,7 @@ export default function CategorySelector({ user, onSelect }: { user: any; onSele
           </button>
         ))}
       </div>
-      <button style={{ marginTop: 24 }} onClick={() => setSelectedCat(null)}>Back to Categories</button>
+      <button style={{ marginTop: 24 }} onClick={() => setSelectedCat(null)}>Powrót do kategorii</button>
     </div>
   );
 }

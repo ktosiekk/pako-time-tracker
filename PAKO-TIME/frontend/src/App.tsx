@@ -66,7 +66,7 @@ function App() {
       </div>
       {user && !tracking && (
         <>
-          <h2 style={{ textAlign: "center", marginBottom: 32 }}>Welcome, {user.name} {user.surname} ({user.id})</h2>
+          <h2 style={{ textAlign: "center", marginBottom: 32 }}>Witaj, {user.name} {user.surname} ({user.id})</h2>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <CategorySelector user={user} onSelect={async (cat, sub) => {
               await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/start`, {
