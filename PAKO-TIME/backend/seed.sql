@@ -1,3 +1,12 @@
+-- Clean tables before seeding to avoid duplicates
+DELETE FROM tracking;
+DELETE FROM subcategories;
+DELETE FROM categories;
+DELETE FROM users;
+
+ALTER SEQUENCE categories_id_seq RESTART WITH 1;
+ALTER SEQUENCE subcategories_id_seq RESTART WITH 1;
+
 -- Insert initial users for authentication
 INSERT INTO users (id, name, surname) VALUES
   ('PAK001', 'Anna', 'Nowak'),
@@ -9,7 +18,8 @@ INSERT INTO categories (name) VALUES
   ('PRZYJĘCIE DOSTAWY'),
   ('KOMPLETACJA'),
   ('PAKOWANIE'),
-  ('ZWROTY');
+  ('ZWROTY'),
+  ('Przerwa');
 
 -- Example subcategories
 INSERT INTO subcategories (category_id, name) VALUES
@@ -27,4 +37,5 @@ INSERT INTO subcategories (category_id, name) VALUES
   (4, 'zwroty002'),
   (4, 'zwroty zagranica'),
   (4, 'zwroty www'),
-  (4, 'lokowanie zwrotów');
+  (4, 'lokowanie zwrotów'),
+  (5, 'Przerwa');
