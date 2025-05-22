@@ -79,9 +79,18 @@ scheduleClearTrackingTable();
 
 // --- Authentication endpoint ---
 app.post('/api/auth/login', async (req, res) => {
-  const { user_id } = req.body;
-  if (!user_id) return res.status(400).json({ detail: 'User ID required' });
+  const { user_id, scanner_id } = req.body;
+  if (!user_id || !scanner_id) return res.status(400).json({ detail: 'User ID and Skanner ID required' });
   try {
+    // Check if scanner is already assigned to an active user
+    const activeScanner = await pool.query('SELECT * FROM tracking WHERE scanner_id = $1 AND active = TRUE', [scanner_id]);
+    if (activeScanner.rows.length > 0) {
+      // If the scanner is assigned to a different user, block login
+      if (activeScanner.rows[0].user_id !== user_id) {
+        return res.status(409).json({ detail: 'Skaner juz przypisany' });
+      }
+      // If the scanner is assigned to the same user, allow login
+    }
     const result = await pool.query('SELECT * FROM users WHERE id = $1', [user_id]);
     if (result.rows.length === 0) return res.status(401).json({ detail: 'Invalid user_id' });
     res.json(result.rows[0]);
@@ -112,13 +121,19 @@ app.get('/api/categories/:id/subcategories', async (req, res) => {
 
 // Start tracking (pause previous, start new or resume paused)
 app.post('/api/tracking/start', async (req, res) => {
-  const { user_id, category_id, subcategory_id } = req.body;
-  if (!user_id || !category_id || !subcategory_id) return res.status(400).json({ detail: 'Missing fields' });
+  const { user_id, category_id, subcategory_id, scanner_id } = req.body;
+  if (!user_id || !category_id || !subcategory_id || !scanner_id) return res.status(400).json({ detail: 'Missing fields' });
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     // Pause previous active
     await client.query('UPDATE tracking SET active = FALSE, end_time = NOW() WHERE user_id = $1 AND active = TRUE', [user_id]);
+    // Check if scanner is already assigned to an active user
+    const activeScanner = await client.query('SELECT * FROM tracking WHERE scanner_id = $1 AND active = TRUE', [scanner_id]);
+    if (activeScanner.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ detail: 'Skaner juz przypisany' });
+    }
     // Try to resume a paused session for this user/category/subcategory
     const resumeResult = await client.query(
       `SELECT id FROM tracking WHERE user_id = $1 AND category_id = $2 AND subcategory_id = $3 AND active = FALSE AND end_time IS NOT NULL ORDER BY end_time DESC LIMIT 1`,
@@ -127,14 +142,14 @@ app.post('/api/tracking/start', async (req, res) => {
     if (resumeResult.rows.length > 0) {
       // Instead of resuming, start a new row for this period
       await client.query(
-        'INSERT INTO tracking (user_id, category_id, subcategory_id, start_time, active) VALUES ($1, $2, $3, NOW(), TRUE)',
-        [user_id, category_id, subcategory_id]
+        'INSERT INTO tracking (user_id, category_id, subcategory_id, start_time, active, scanner_id) VALUES ($1, $2, $3, NOW(), TRUE, $4)',
+        [user_id, category_id, subcategory_id, scanner_id]
       );
     } else {
       // Start new
       await client.query(
-        'INSERT INTO tracking (user_id, category_id, subcategory_id, start_time, active) VALUES ($1, $2, $3, NOW(), TRUE)',
-        [user_id, category_id, subcategory_id]
+        'INSERT INTO tracking (user_id, category_id, subcategory_id, start_time, active, scanner_id) VALUES ($1, $2, $3, NOW(), TRUE, $4)',
+        [user_id, category_id, subcategory_id, scanner_id]
       );
     }
     await client.query('COMMIT');
@@ -165,7 +180,7 @@ app.post('/api/tracking/stop', async (req, res) => {
 app.get('/api/tracking/live', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT t.id, t.user_id, u.name, u.surname, c.name as category, s.name as subcategory, t.start_time, t.end_time, t.active
+      SELECT t.id, t.user_id, u.name, u.surname, c.name as category, s.name as subcategory, t.start_time, t.end_time, t.active, t.scanner_id
       FROM tracking t
       JOIN users u ON t.user_id = u.id
       JOIN categories c ON t.category_id = c.id

@@ -22,5 +22,6 @@ CREATE TABLE IF NOT EXISTS tracking (
     subcategory_id INTEGER REFERENCES subcategories(id),
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP,
-    active BOOLEAN DEFAULT TRUE
+    active BOOLEAN DEFAULT TRUE,
+    scanner_id TEXT
 );

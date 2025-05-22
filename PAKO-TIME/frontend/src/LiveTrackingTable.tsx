@@ -11,6 +11,7 @@ interface TrackingRow {
   start_time: string;
   end_time: string | null;
   active: boolean;
+  scanner_id?: string;
 }
 
 const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
@@ -20,7 +21,13 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
   const fetchRows = () => {
     fetch(`${process.env.REACT_APP_API_URL}/api/tracking/live`)
       .then(res => res.json())
-      .then(setRows);
+      .then(data => {
+        if (Array.isArray(data)) {
+          setRows(data);
+        } else {
+          setRows([]);
+        }
+      });
   };
 
   useImperativeHandle(ref, () => ({
@@ -87,6 +94,7 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
           <thead>
             <tr style={{ background: "linear-gradient(90deg,#1976d2 60%,#2196f3 100%)", color: "#fff" }}>
               <th style={{ padding: "14px 18px", borderTopLeftRadius: 10, fontWeight: 700, letterSpacing: 1 }}>User ID</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Skanner ID</th>
               <th style={{ padding: "14px 18px", fontWeight: 700 }}>Imię</th>
               <th style={{ padding: "14px 18px", fontWeight: 700 }}>Nazwisko</th>
               <th style={{ padding: "14px 18px", fontWeight: 700 }}>Kategoria</th>
@@ -97,12 +105,13 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
           <tbody>
             {grouped.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: 40, color: "#888", fontSize: 18 }}>No records found.</td>
+                <td colSpan={7} style={{ padding: 40, color: "#888", fontSize: 18 }}>No records found.</td>
               </tr>
             ) : (
               grouped.map((row: any) => (
                 <tr key={row.user_id + row.category + row.subcategory} style={{ background: row.active ? "#e3f2fd" : "#f9f9f9", transition: "background 0.3s" }}>
                   <td style={{ padding: "12px 14px", fontWeight: 600 }}>{row.user_id}</td>
+                  <td style={{ padding: "12px 14px" }}>{row.scanner_id || ""}</td>
                   <td style={{ padding: "12px 14px" }}>{row.name}</td>
                   <td style={{ padding: "12px 14px" }}>{row.surname}</td>
                   <td style={{ padding: "12px 14px" }}>{row.category}</td>

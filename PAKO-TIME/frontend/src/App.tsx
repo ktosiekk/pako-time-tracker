@@ -5,6 +5,7 @@ import LiveTrackingTable from "./LiveTrackingTable";
 
 function App() {
   const [userId, setUserId] = useState("");
+  const [scannerId, setScannerId] = useState("");
   const [error, setError] = useState("");
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ function App() {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId }),
+        body: JSON.stringify({ user_id: userId, scanner_id: scannerId }),
       });
       const text = await res.text();
       let data;
@@ -32,7 +33,7 @@ function App() {
         return;
       }
       if (!res.ok) {
-        setError(data.detail || "Invalid user ID");
+        setError(data.detail || "Invalid user ID or Skanner");
         setLoading(false);
         return;
       }
@@ -47,15 +48,23 @@ function App() {
   return (
     <div style={{ padding: 32 }}>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-        <form onSubmit={handleLogin} style={{ background: "#fff", padding: 16, borderRadius: 8, boxShadow: "0 2px 8px #0001", minWidth: 320, display: "flex", alignItems: "center", gap: 8, justifyContent: "center", width: 340 }}>
+        <form onSubmit={handleLogin} style={{ background: "#fff", padding: 16, borderRadius: 8, boxShadow: "0 2px 8px #0001", minWidth: 320, display: "flex", alignItems: "center", gap: 8, justifyContent: "center", width: 440 }}>
           <input
             ref={inputRef}
             type="text"
             placeholder="Zaloguj się"
             value={userId}
             onChange={e => setUserId(e.target.value)}
-            style={{ padding: 10, fontSize: 17, borderRadius: 8, border: "1px solid #ccc", width: 240, textAlign: "center" }}
+            style={{ padding: 10, fontSize: 17, borderRadius: 8, border: "1px solid #ccc", width: 140, textAlign: "center" }}
             autoFocus
+            disabled={loading}
+          />
+          <input
+            type="text"
+            placeholder="Skanner ID"
+            value={scannerId}
+            onChange={e => setScannerId(e.target.value)}
+            style={{ padding: 10, fontSize: 17, borderRadius: 8, border: "1px solid #ccc", width: 140, textAlign: "center" }}
             disabled={loading}
           />
           <button type="submit" style={{ padding: 10, fontSize: 17, borderRadius: 8, background: "#1976d2", color: "#fff", border: 0, minWidth: 90 }} disabled={loading}>
@@ -72,13 +81,14 @@ function App() {
               await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/start`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user_id: user.id, category_id: cat.id, subcategory_id: sub.id })
+                body: JSON.stringify({ user_id: user.id, category_id: cat.id, subcategory_id: sub.id, scanner_id: scannerId })
               });
               setTracking({ cat, sub });
               // After choosing subcategory, log out and reset state
               setTracking(null);
               setUser(null);
               setUserId("");
+              setScannerId("");
               setError("");
               tableRef.current?.refresh();
               // Focus the input after logout
@@ -95,6 +105,7 @@ function App() {
                 setTracking(null);
                 setUser(null);
                 setUserId("");
+                setScannerId("");
                 setError("");
                 tableRef.current?.refresh();
                 // Focus the input after logout
