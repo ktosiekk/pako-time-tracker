@@ -16,12 +16,34 @@ export default function CategorySelector({ user, onSelect }: { user: any; onSele
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedCat, setSelectedCat] = useState<Category | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeCounts, setActiveCounts] = useState<{ [catId: number]: number }>({});
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/api/categories`)
       .then(res => res.json())
       .then(setCategories);
   }, []);
+
+  // Fetch active jobs per category, update on mount and when returning to category selection
+  useEffect(() => {
+    if (!selectedCat) {
+      fetch(`${process.env.REACT_APP_API_URL}/api/tracking/live`)
+        .then(res => res.json())
+        .then((rows) => {
+          const counts: { [catId: number]: number } = {};
+          for (const row of rows) {
+            if (row.active) {
+              // Find category by name (row.category)
+              const cat = categories.find(c => c.name === row.category);
+              if (cat) {
+                counts[cat.id] = (counts[cat.id] || 0) + 1;
+              }
+            }
+          }
+          setActiveCounts(counts);
+        });
+    }
+  }, [selectedCat, categories]);
 
   useEffect(() => {
     if (selectedCat) {
@@ -35,8 +57,25 @@ export default function CategorySelector({ user, onSelect }: { user: any; onSele
     return (
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", margin: "32px 0" }}>
         {categories.map(cat => (
-          <button key={cat.id} style={{ padding: 20, fontSize: 18, borderRadius: 8, border: "1px solid #1976d2", background: "#fff", cursor: "pointer" }} onClick={() => setSelectedCat(cat)}>
+          <button key={cat.id} style={{ position: "relative", padding: 20, fontSize: 18, borderRadius: 8, border: "1px solid #1976d2", background: "#fff", cursor: "pointer" }} onClick={() => setSelectedCat(cat)}>
             {cat.name}
+            {activeCounts[cat.id] > 0 && (
+              <span style={{
+                position: "absolute",
+                right: 8,
+                bottom: 8,
+                background: "#1976d2",
+                color: "#fff",
+                borderRadius: "50%",
+                fontSize: 13,
+                minWidth: 22,
+                minHeight: 22,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0 6px"
+              }}>{activeCounts[cat.id]}</span>
+            )}
           </button>
         ))}
       </div>
