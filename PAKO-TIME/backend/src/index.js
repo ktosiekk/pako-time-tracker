@@ -134,19 +134,20 @@ app.post('/api/tracking/start', async (req, res) => {
       await client.query('ROLLBACK');
       return res.status(409).json({ detail: 'Skaner juz przypisany' });
     }
-    // Try to resume a paused session for this user/category/subcategory
+    // Try to resume a paused session for this user/category/subcategory/scanner
     const resumeResult = await client.query(
-      `SELECT id FROM tracking WHERE user_id = $1 AND category_id = $2 AND subcategory_id = $3 AND active = FALSE AND end_time IS NOT NULL ORDER BY end_time DESC LIMIT 1`,
-      [user_id, category_id, subcategory_id]
+      `SELECT id FROM tracking WHERE user_id = $1 AND category_id = $2 AND subcategory_id = $3 AND scanner_id = $4 AND active = FALSE AND end_time IS NOT NULL ORDER BY end_time DESC LIMIT 1`,
+      [user_id, category_id, subcategory_id, scanner_id]
     );
     if (resumeResult.rows.length > 0) {
-      // Instead of resuming, start a new row for this period
+      // Resume only if all match (user, category, subcategory, scanner)
+      // Instead of resuming, start a new row for this period (timer continues)
       await client.query(
         'INSERT INTO tracking (user_id, category_id, subcategory_id, start_time, active, scanner_id) VALUES ($1, $2, $3, NOW(), TRUE, $4)',
         [user_id, category_id, subcategory_id, scanner_id]
       );
     } else {
-      // Start new
+      // Start new (timer resets)
       await client.query(
         'INSERT INTO tracking (user_id, category_id, subcategory_id, start_time, active, scanner_id) VALUES ($1, $2, $3, NOW(), TRUE, $4)',
         [user_id, category_id, subcategory_id, scanner_id]

@@ -11,7 +11,7 @@ ALTER SEQUENCE subcategories_id_seq RESTART WITH 1;
 INSERT INTO users (id, name, surname) VALUES
   ('PAK001', 'Anna', 'Nowak'),
   ('PAK002', 'Jan', 'Kowalski'),
-  ('PAK003', 'Maria', 'Wiśniewska')
+  ('PAK003', 'Maria', 'Wiśniewska'),
   ('JMOTYLSKA', 'Justyna', 'Motylska'),
   ('ANOWICKA', 'Anita', 'Nowicka'),
   ('PKUNA', 'Piotr', 'Kuna'),

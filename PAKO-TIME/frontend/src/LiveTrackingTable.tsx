@@ -50,7 +50,7 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
   type GroupedRow = TrackingRow & { totalSeconds: number, active: boolean, activeStart: string | null };
   const groupedObj: { [key: string]: GroupedRow } = {};
   for (const row of filtered) {
-    const key = `${row.user_id}|${row.category}|${row.subcategory}`;
+    const key = `${row.user_id}|${row.category}|${row.subcategory}|${row.scanner_id}`;
     if (!groupedObj[key]) {
       groupedObj[key] = {
         ...row,
@@ -109,7 +109,7 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
               </tr>
             ) : (
               grouped.map((row: any) => (
-                <tr key={row.user_id + row.category + row.subcategory} style={{ background: row.active ? "#e3f2fd" : "#f9f9f9", transition: "background 0.3s" }}>
+                <tr key={row.id} style={{ background: row.active ? "#e3f2fd" : "#f9f9f9", transition: "background 0.3s" }}>
                   <td style={{ padding: "12px 14px", fontWeight: 600 }}>{row.user_id}</td>
                   <td style={{ padding: "12px 14px" }}>{row.scanner_id || ""}</td>
                   <td style={{ padding: "12px 14px" }}>{row.name}</td>
