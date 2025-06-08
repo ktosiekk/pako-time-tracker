@@ -99,13 +99,15 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
               <th style={{ padding: "14px 18px", fontWeight: 700 }}>Nazwisko</th>
               <th style={{ padding: "14px 18px", fontWeight: 700 }}>Kategoria</th>
               <th style={{ padding: "14px 18px", fontWeight: 700 }}>Pod-Kategoria</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Czas rozpoczęcia</th>
+              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Czas zakończenia</th>
               <th style={{ padding: "14px 18px", borderTopRightRadius: 10, fontWeight: 700 }}>Czas</th>
             </tr>
           </thead>
           <tbody>
             {grouped.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ padding: 40, color: "#888", fontSize: 18 }}>No records found.</td>
+                <td colSpan={9} style={{ padding: 40, color: "#888", fontSize: 18 }}>No records found.</td>
               </tr>
             ) : (
               grouped.map((row: any) => (
@@ -116,6 +118,8 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
                   <td style={{ padding: "12px 14px" }}>{row.surname}</td>
                   <td style={{ padding: "12px 14px" }}>{row.category}</td>
                   <td style={{ padding: "12px 14px" }}>{row.subcategory}</td>
+                  <td style={{ padding: "12px 14px" }}>{formatTime(row.activeStart || row.start_time)}</td>
+                  <td style={{ padding: "12px 14px" }}>{row.active ? "" : formatTime(row.end_time)}</td>
                   <td style={{ padding: "12px 14px", color: row.active ? "#1976d2" : undefined, fontWeight: row.active ? 700 : 500, fontSize: 17 }}>{row.active ? <LiveCounterAccum start={row.activeStart} baseSeconds={row.totalSeconds - Math.floor((Date.now() - new Date(row.activeStart).getTime()) / 1000)} /> : formatDuration(row.totalSeconds)}</td>
                 </tr>
               ))
@@ -159,4 +163,12 @@ function formatDuration(seconds: number) {
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
+function formatTime(dateString: string | null | undefined) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const h = date.getHours().toString().padStart(2, "0");
+  const m = date.getMinutes().toString().padStart(2, "0");
+  return `${h}:${m}`;
 }
