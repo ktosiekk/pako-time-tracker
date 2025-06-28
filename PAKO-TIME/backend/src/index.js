@@ -202,16 +202,18 @@ app.get('/api/report', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT t.user_id, u.name, u.surname, c.name as category, s.name as subcategory,
-        SUM(EXTRACT(EPOCH FROM (COALESCE(t.end_time, NOW()) - t.start_time))) as total_seconds
+        TO_CHAR(t.start_time, 'HH24:MI') as start_time,
+        TO_CHAR(t.end_time, 'HH24:MI') as end_time,
+        EXTRACT(EPOCH FROM (t.end_time - t.start_time)) as total_seconds
       FROM tracking t
       JOIN users u ON t.user_id = u.id
       JOIN categories c ON t.category_id = c.id
       JOIN subcategories s ON t.subcategory_id = s.id
       WHERE t.start_time >= $1 AND t.start_time <= $2
-      GROUP BY t.user_id, u.name, u.surname, c.name, s.name
-      ORDER BY t.user_id, c.name, s.name
+        AND t.end_time IS NOT NULL AND t.end_time >= $1 AND t.end_time <= $2
+      ORDER BY t.user_id, c.name, s.name, t.start_time
     `, [from, to]);
-    const parser = new Parser({ fields: ["user_id", "name", "surname", "category", "subcategory", "total_seconds"] });
+    const parser = new Parser({ fields: ["user_id", "name", "surname", "category", "subcategory", "start_time", "end_time", "total_seconds"] });
     const csv = parser.parse(result.rows);
     res.header('Content-Type', 'text/csv');
     res.attachment('report.csv');
