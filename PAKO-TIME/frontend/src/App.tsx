@@ -12,6 +12,7 @@ function App() {
   const [tracking, setTracking] = useState<any>(null);
   const tableRef = useRef<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scannerInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +25,7 @@ function App() {
         body: JSON.stringify({ user_id: userId, scanner_id: scannerId }),
       });
       const text = await res.text();
-      let data;
+      let data: any;
       try {
         data = JSON.parse(text);
       } catch {
@@ -58,14 +59,27 @@ function App() {
             style={{ padding: 10, fontSize: 17, borderRadius: 8, border: "1px solid #ccc", width: 140, textAlign: "center" }}
             autoFocus
             disabled={loading}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                scannerInputRef.current?.focus();
+              }
+            }}
           />
           <input
+            ref={scannerInputRef}
             type="text"
             placeholder="Skanner ID"
             value={scannerId}
             onChange={e => setScannerId(e.target.value)}
             style={{ padding: 10, fontSize: 17, borderRadius: 8, border: "1px solid #ccc", width: 140, textAlign: "center" }}
             disabled={loading}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleLogin(e as any);
+              }
+            }}
           />
           <button type="submit" style={{ padding: 10, fontSize: 17, borderRadius: 8, background: "#1976d2", color: "#fff", border: 0, minWidth: 90 }} disabled={loading}>
             {loading ? "Logging in..." : "Login"}
@@ -84,14 +98,12 @@ function App() {
                 body: JSON.stringify({ user_id: user.id, category_id: cat.id, subcategory_id: sub.id, scanner_id: scannerId })
               });
               setTracking({ cat, sub });
-              // After choosing subcategory, log out and reset state
               setTracking(null);
               setUser(null);
               setUserId("");
               setScannerId("");
               setError("");
               tableRef.current?.refresh();
-              // Focus the input after logout
               setTimeout(() => { inputRef.current?.focus(); }, 0);
             }} />
             <button
@@ -108,7 +120,6 @@ function App() {
                 setScannerId("");
                 setError("");
                 tableRef.current?.refresh();
-                // Focus the input after logout
                 setTimeout(() => { inputRef.current?.focus(); }, 0);
               }}
             >Zakończ pracę</button>
