@@ -10,7 +10,8 @@ function formatDuration(seconds: number) {
 
 function RaportPage() {
   const today = new Date().toISOString().slice(0, 10);
-  const [date, setDate] = useState(today);
+  const [fromDate, setFromDate] = useState(today);
+  const [toDate, setToDate] = useState(today);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
@@ -31,14 +32,14 @@ function RaportPage() {
 
   const handleGenerate = async () => {
     setError("");
-    if (!date) {
-      setError("Wybierz datę");
+    if (!fromDate || !toDate) {
+      setError("Wybierz zakres dat");
       return;
     }
     setDownloading(true);
     try {
-      const from = `${date}T00:00:00`;
-      const to = `${date}T23:59:59`;
+      const from = `${fromDate}T00:00:00`;
+      const to = `${toDate}T23:59:59`;
       const url = `${process.env.REACT_APP_API_URL}/api/report?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Błąd pobierania raportu");
@@ -56,10 +57,11 @@ function RaportPage() {
         });
         text = [header, ...data].join('\n');
       }
-      const blob = new Blob([text], { type: 'text/csv' });
+      // Add UTF-8 BOM for Excel compatibility
+      const blob = new Blob(['\uFEFF' + text], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement("a");
       a.href = window.URL.createObjectURL(blob);
-      a.download = `raport_${date}.csv`;
+      a.download = `raport_${fromDate}_do_${toDate}.csv`;
       a.click();
     } catch (e) {
       setError("Błąd generowania raportu");
@@ -95,8 +97,9 @@ function RaportPage() {
           </div>
         ))}
       </div>
-      <div style={{ margin: "24px 0" }}>
-        <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ fontSize: 18, padding: 10, borderRadius: 8, border: "1px solid #1976d2" }} />
+      <div style={{ margin: "24px 0", display: "flex", gap: 16, alignItems: "center" }}>
+        <label>Od: <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={{ fontSize: 18, padding: 10, borderRadius: 8, border: "1px solid #1976d2" }} /></label>
+        <label>Do: <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={{ fontSize: 18, padding: 10, borderRadius: 8, border: "1px solid #1976d2" }} /></label>
       </div>
       <button onClick={handleGenerate}
         style={{ padding: 12, fontSize: 17, borderRadius: 8, background: "#1976d2", color: "#fff", border: 0, minWidth: 120, marginRight: 12 }}

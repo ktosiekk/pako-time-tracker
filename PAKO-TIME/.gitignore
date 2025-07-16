@@ -6,3 +6,4 @@ frontend/.env
 frontend/.env.local
 frontend/Dockerfile
 backend/.env
+backend/seed.sql

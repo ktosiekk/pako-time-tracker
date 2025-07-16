@@ -213,9 +213,12 @@ app.get('/api/report', async (req, res) => {
         AND t.end_time IS NOT NULL AND t.end_time >= $1 AND t.end_time <= $2
       ORDER BY t.user_id, c.name, s.name, t.start_time
     `, [from, to]);
-    const parser = new Parser({ fields: ["user_id", "name", "surname", "category", "subcategory", "start_time", "end_time", "total_seconds"] });
-    const csv = parser.parse(result.rows);
-    res.header('Content-Type', 'text/csv');
+    // CSV
+    const parser = new Parser({ fields: ["user_id", "name", "surname", "category", "subcategory", "start_time", "end_time", "time"] });
+    let csv = parser.parse(result.rows);
+    // Add UTF-8 BOM for Excel compatibility
+    csv = '\uFEFF' + csv;
+    res.header('Content-Type', 'text/csv; charset=utf-8');
     res.attachment('report.csv');
     res.send(csv);
   } catch (err) {
