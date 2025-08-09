@@ -202,6 +202,7 @@ app.get('/api/report', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT t.user_id, u.name, u.surname, c.name as category, s.name as subcategory,
+        TO_CHAR(t.start_time, 'YYYY-MM-DD') as date,
         TO_CHAR(t.start_time, 'HH24:MI') as start_time,
         TO_CHAR(t.end_time, 'HH24:MI') as end_time,
         EXTRACT(EPOCH FROM (t.end_time - t.start_time)) as total_seconds
@@ -214,8 +215,13 @@ app.get('/api/report', async (req, res) => {
       ORDER BY t.user_id, c.name, s.name, t.start_time
     `, [from, to]);
     // CSV
-    const parser = new Parser({ fields: ["user_id", "name", "surname", "category", "subcategory", "start_time", "end_time", "time"] });
-    let csv = parser.parse(result.rows);
+    const parser = new Parser({ fields: ["user_id", "name", "surname", "category", "subcategory", "date", "start_time", "end_time", "time"] });
+    // Add a 'time' field to each row (formatting total_seconds as HH:MM:SS)
+    const rows = result.rows.map(row => ({
+      ...row,
+      time: new Date(row.total_seconds * 1000).toISOString().substr(11, 8)
+    }));
+    let csv = parser.parse(rows);
     // Add UTF-8 BOM for Excel compatibility
     csv = '\uFEFF' + csv;
     res.header('Content-Type', 'text/csv; charset=utf-8');
