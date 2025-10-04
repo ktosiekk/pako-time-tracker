@@ -203,8 +203,8 @@ app.get('/api/report', async (req, res) => {
     const result = await pool.query(`
       SELECT t.user_id, u.name, u.surname, c.name as category, s.name as subcategory,
         TO_CHAR(t.start_time, 'YYYY-MM-DD') as date,
-        TO_CHAR(t.start_time, 'HH24:MI') as start_time,
-        TO_CHAR(t.end_time, 'HH24:MI') as end_time,
+        TO_CHAR(t.start_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Warsaw', 'HH24:MI') as start_time,
+	TO_CHAR(t.end_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Warsaw', 'HH24:MI') as end_time,
         EXTRACT(EPOCH FROM (t.end_time - t.start_time)) as total_seconds
       FROM tracking t
       JOIN users u ON t.user_id = u.id

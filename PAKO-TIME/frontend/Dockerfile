@@ -9,7 +9,7 @@ RUN npm install
 COPY . .
 
 # Set environment variable for API URL to localhost for browser access
-ENV REACT_APP_API_URL=http://localhost:30010
+ENV REACT_APP_API_URL=http://18.234.240.47:30010
 
 RUN npm run build
 

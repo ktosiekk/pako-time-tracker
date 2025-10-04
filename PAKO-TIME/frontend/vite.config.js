@@ -21,9 +21,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api": "http://localhost:30010",
+      "/api": "http://18.234.240.47:30010",
       "/socket.io": {
-        target: "ws://localhost:30010",
+        target: "ws://18.234.240.47:30010",
         ws: true
       }
     }

@@ -87,7 +87,7 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
         boxShadow: "0 4px 24px #0002",
         padding: 32,
         minWidth: 900,
-        maxWidth: 1200,
+        maxWidth: 1600,
         border: "1px solid #e3e3e3"
       }}>
         <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: 18, textAlign: "center", letterSpacing: 0.2, color: "#222" }}>
@@ -99,9 +99,9 @@ const LiveTrackingTable = forwardRef(function LiveTrackingTable(props, ref) {
               <th style={{ padding: "14px 18px", fontWeight: 700 }}>Nazwisko</th>
               <th style={{ padding: "14px 18px", fontWeight: 700 }}>Kategoria</th>
               <th style={{ padding: "14px 18px", fontWeight: 700 }}>Pod-Kategoria</th>
-              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Czas rozpoczęcia</th>
-              <th style={{ padding: "14px 18px", fontWeight: 700 }}>Czas zakończenia</th>
-              <th style={{ padding: "14px 18px", borderTopRightRadius: 10, fontWeight: 700 }}>Czas</th>
+              <th style={{ padding: "14px 18px", minWidth: 100, fontWeight: 700 }}>Czas rozpoczęcia</th>
+              <th style={{ padding: "14px 18px", minWidth: 100, fontWeight: 700 }}>Czas zakończenia</th>
+              <th style={{ padding: "14px 18px", minWidth: 80, borderTopRightRadius: 10, fontWeight: 700 }}>Czas</th>
             </tr>
           </thead>
           <tbody>
