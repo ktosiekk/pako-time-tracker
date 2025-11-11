@@ -45,6 +45,9 @@ INSERT INTO users (id, name, surname) VALUES
   ('WKUNA', 'Wiktoria', 'Kuna'),
   ('DZDYB', 'Dominik', 'Zdyb'),
   ('PPANASIUK', 'Patrycja', 'Panasiuk'),
+  ('SZKOLENIE1', 'SZKOLENIE1', 'SZKOLENIE1'),
+  ('SZKOLENIE2', 'SZKOLENIE2', 'SZKOLENIE2'),
+  ('SZKOLENIE3', 'SZKOLENIE3', 'SZKOLENIE3'),
   ('TNITKA', 'Tomasz', 'Nitka');
 
 
@@ -88,6 +91,8 @@ INSERT INTO subcategories (category_id, name) VALUES
   (6, 'Spotknia/ zebrania'),
   (6, 'Liczenie dostawy'),
   (6, 'Rozładunek auta'),
+  (6, 'Kontrola Zagranica'),
+  (6, 'Trener'),
   (7, 'Specjaliści'),
   (8, 'Awaria'),
   (9, 'Wiszące'),
