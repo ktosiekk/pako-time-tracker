@@ -1,44 +1,50 @@
 version: "3.9"
 services:
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: pako
-      TZ: Europe/Warsaw
-    ports:
-      - "55432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-
   backend:
     build: ./backend
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/pako
+      DATABASE_URL: postgres://app_rcp:3PD*zdJRnqWr5i6H^pV$$wzYEmD$$brBFh@172.17.90.2:5432/rcp
       TZ: Europe/Warsaw
-    ports:
-      - "30010:3001"
-    depends_on:
-      - db
+    expose:
+      - "3001"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+    networks:
+      - pako-network
 
   frontend:
     build: ./frontend
     environment:
       TZ: Europe/Warsaw
-    ports:
-      - "5173:5173"
+    expose:
+      - "5173"
     depends_on:
       - backend
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+    networks:
+      - pako-network
 
-volumes:
-  db_data:
+  nginx:
+    image: nginx:alpine
+    container_name: pako-nginx-ssl
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+      - "30010:30010"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/ssl/certs/rcp.crt:/etc/ssl/certs/rcp.crt:ro
+      - /etc/ssl/private/rcp.key:/etc/ssl/private/rcp.key:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - pako-network
 
+networks:
+  pako-network:
+    driver: bridge

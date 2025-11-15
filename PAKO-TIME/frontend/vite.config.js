@@ -21,11 +21,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api": "http://18.234.240.47:30010",
+      "/api": "https://172.17.105.2:30010",
       "/socket.io": {
-        target: "ws://18.234.240.47:30010",
+        target: "ws://172.17.105.2:30010",
         ws: true
       }
     }
   }
 });
+
