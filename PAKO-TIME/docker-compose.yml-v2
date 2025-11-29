@@ -32,8 +32,9 @@ services:
     container_name: pako-nginx-ssl
     restart: unless-stopped
     ports:
-      - "3001:3001"  # Backend HTTPS
-      - "5173:5173"    # Frontend HTTPS
+      - "443:443"
+      # Port 80 usunięty - redirect robi REVPROXY
+      - "30010:30010"  # Opcjonalnie, jeśli nadal potrzebny
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - /etc/ssl/certs/rcp.crt:/etc/ssl/certs/rcp.crt:ro

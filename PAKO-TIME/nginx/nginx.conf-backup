@@ -5,23 +5,42 @@ events {
 http {
     # Resolver Docker DNS
     resolver 127.0.0.11 valid=30s;
-    
-    # Backend na porcie 3001 z SSL
+
+    # Redirect HTTP to HTTPS
     server {
-        listen 3001 ssl;
-        http2 on;
+        listen 80;
         server_name _;
-        
-        # Certyfikaty z AD-CA
+        return 301 https://$host$request_uri;
+    }
+
+    # HTTPS Server - główny (port 443)
+    server {
+        listen 443 ssl;
+        server_name _;
+
         ssl_certificate /etc/ssl/certs/rcp.crt;
         ssl_certificate_key /etc/ssl/private/rcp.key;
+
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_ciphers HIGH:!aNULL:!MD5;
         ssl_prefer_server_ciphers on;
-        add_header Strict-Transport-Security "max-age=31536000" always;
-        
-        # Cały ruch do backendu
-        location / {
+
+        # Socket.io - Backend
+        location /socket.io/ {
+            set $backend_upstream http://backend:3001;
+            proxy_pass $backend_upstream;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_buffering off;
+        }
+
+        # Backend API
+        location /api {
             set $backend_upstream http://backend:3001;
             proxy_pass $backend_upstream;
             proxy_http_version 1.1;
@@ -32,30 +51,38 @@ http {
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
-            # Dłuższe timeouty dla API
-            proxy_read_timeout 300s;
-            proxy_connect_timeout 75s;
         }
-    }
-    
-    # Frontend na porcie 5173 z SSL
-    server {
-        listen 5173 ssl;
-        http2 on;
-        server_name _;
-        
-        # Certyfikaty z AD-CA
-        ssl_certificate /etc/ssl/certs/rcp.crt;
-        ssl_certificate_key /etc/ssl/private/rcp.key;
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers HIGH:!aNULL:!MD5;
-        ssl_prefer_server_ciphers on;
-        add_header Strict-Transport-Security "max-age=31536000" always;
-        
-        # Cały ruch do frontendu
+
+        # Frontend
         location / {
             set $frontend_upstream http://frontend:5173;
             proxy_pass $frontend_upstream;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+
+    # Backend na porcie 30010 z SSL (BEZ CORS - obsługuje backend)
+    server {
+        listen 30010 ssl;
+        server_name _;
+
+        ssl_certificate /etc/ssl/certs/rcp.crt;
+        ssl_certificate_key /etc/ssl/private/rcp.key;
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers on;
+
+        location / {
+            set $backend_upstream http://backend:3001;
+            proxy_pass $backend_upstream;
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection 'upgrade';
